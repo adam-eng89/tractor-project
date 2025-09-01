@@ -1,0 +1,120 @@
+#include "GENG1201_Project.h"
+#include <Servo.h>
+
+int state = 1;
+Servo servo2;  // Continuous rotation servo on Pin 10 (changed from 11 to avoid conflict)
+
+void setup()
+{
+  Init();
+  servo2.attach(11);  // Attach the servo on a different pin
+  servo2.write(90);   // Stop at startup
+  // Initialize servo at forward position
+  servoControl(90);
+}
+
+void loop()
+{
+  readUltrasonicSensor(get_Distance);
+  TrackingData_R = infraRed_R();
+  TrackingData_M = infraRed_M();
+  TrackingData_L = infraRed_L();
+  
+  switch (state) {
+    case 1:
+      myColor(255, 0, 0, 100);
+      
+      if (function_xxx(TrackingData_M, 0, 110)) {
+        move(Forward, 80);
+      }
+      else if (function_xxx(TrackingData_L, 0, 110)) {
+        move(Left, 45);
+      }
+      else if (function_xxx(TrackingData_R, 0, 110)) {
+        move(Right, 45);
+      }
+      else {
+        state = 2;
+      }
+      
+      break;
+      
+    case 2:
+      myColor(255, 255, 0, 100);
+      delay(300);
+      
+      servoControl(98);
+      
+      if (get_Distance <= 25) { // when an object is detected too close
+        move(stop_it, 0);  // stop the car
+        servoControl(0);   // look to the right
+        delay(100);        // allow the servo time to turn before checking again
+        readUltrasonicSensor(get_Distance); // get the distance to objects on the right
+
+        if (get_Distance > 35) {  // if it is far enough away
+          move(Right, 100);  // turn right
+          delay(250);        // adjust duration for a 90° turn
+          servoControl(98);  // put the servo back in the middle (changed from 98)
+          move(Forward, 100);  // resume driving
+        }
+        else {  // if there is something in front and to the right
+          servoControl(180);  // look left
+          delay(300);         // allow time for turning
+          readUltrasonicSensor(get_Distance); // get the distance
+
+          if (get_Distance > 35) {  // if it is far enough away
+            move(Left, 100);   // turn left
+            delay(250);        // adjust duration for a 90° turn
+            servoControl(98);  // put the servo back in the middle (changed from 98)
+            move(Forward, 100);  // resume driving
+          }
+        }
+      }
+      else {  // if there is no object in front, drive forward
+        move(Forward, 100);
+      }
+
+      if (function_xxx(TrackingData_M, 0, 400)) {
+        servo2.write(95);
+      }
+      else {
+        servo2.write(90);
+      }
+
+     break;
+
+     if(function_xxx(TrackingData_M, 0, 100)){
+      move(stop_it, 0);
+       state = 3;
+    
+ }
+      
+
+      case 3:
+        myColor(0,0,255,100);
+        if (function_xxx(TrackingData_M, 0, 100)) {
+          move(Forward, 100);
+        }
+        else if (function_xxx(TrackingData_L, 0, 100)){
+          move(Left, 100);
+        }
+        else if (function_xxx(TrackingData_R, 0, 100)){
+          move(Right, 100);
+        }
+        else{
+          move(stop_it, 0);
+          state = 4;
+        }
+        break;
+
+      case 4:
+        myColor(255,0,255,100);
+        delay(200);
+        myColor(255,0,255,100);
+        delay(200);
+        if (ReadRemote() == 0){
+          move(Forward, 100);
+        }
+      */
+  }
+}
